@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  synchscripts:
+    build:
+      context: scripts/
+    container_name: covid19-vaccines-synchscripts
+    depends_on:
+      - mongo
+    networks:
+      - internal
+
+  mongo:
+    container_name: covid19-vaccines-mongo
+    image: mongo:4.2.1-bionic
+    ports:
+      - 27017:27017
+    volumes:
+      - dbdata:/data/db
+    env_file:
+      - .env
+    networks:
+      - internal
+
+volumes:
+  dbdata:
+
+networks:
+  internal:
+    driver: bridge
