@@ -1,6 +1,20 @@
-version: '3.7'
+version: "3.7"
 
 services:
+  api:
+    build:
+      context: backend/
+    container_name: covid19-vaccines-backend
+    depends_on:
+      - mongo
+    networks:
+      - internal
+    ports:
+      - 3000:3000
+    volumes:
+      - ./server.js:/srv/server.js
+      - ./api:/srv/api
+
   synchscripts:
     build:
       context: scripts/
