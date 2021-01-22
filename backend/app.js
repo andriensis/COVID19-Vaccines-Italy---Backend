@@ -5,6 +5,7 @@ const port = process.env.PORT || 3000
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const LatestData = require('./models/latestdata.model');
+const AdministrationData = require('./models/administrationdata.model');
 
 mongoose.connect(process.env.MONGODB_URL, {
   useCreateIndex: true,
@@ -37,6 +38,11 @@ app.get('/latestData', async (req, res) => {
   summaryData.last_update = lastUpdate
 
   res.send({ "summary": summaryData, "details": latestData })
+})
+
+app.get('/administrationData/:area', async (req, res) => {
+  const administrationData = await AdministrationData.find({area: req.params.area})
+  res.send(administrationData)
 })
 
 app.listen(port, () => {
