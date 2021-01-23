@@ -6,7 +6,7 @@ from pymongo import MongoClient
 client = MongoClient(
     "mongodb://admin:Covid19Vaccini@covid19-vaccines-mongo:27017/covid19vaccines?authSource=admin&w=1")
 db = client.covid19vaccines
-collection = db.latestdata
+latestDataCollection = db.latestdata
 
 url = "https://raw.githubusercontent.com/italia/covid19-opendata-vaccini/master/dati/vaccini-summary-latest.json"
 response = urllib.request.urlopen(url)
@@ -21,14 +21,16 @@ for regionData in result['data']:
         "administration_percentage": regionData["percentuale_somministrazione"],
         "last_update": regionData["ultimo_aggiornamento"]
     }
-    collection.replace_one({"index": regionData["index"]}, data, True)
+    latestDataCollection.replace_one(
+        {"index": regionData["index"]}, data, True)
     if result is None:
-        collection.insert_one(data)
+        latestDataCollection.insert_one(data)
 
 url = "https://raw.githubusercontent.com/italia/covid19-opendata-vaccini/master/dati/somministrazioni-vaccini-summary-latest.json"
-collection = db.administrationdata
+administrationDataCollection = db.administrationdata
 response = urllib.request.urlopen(url)
 result = json.loads(response.read())
+summaryData = {}
 
 for administrationData in result['data']:
     data = {
@@ -45,8 +47,27 @@ for administrationData in result['data']:
         "first_dose": administrationData["prima_dose"],
         "second_dose": administrationData["seconda_dose"]
     }
-    collection.replace_one({"index": administrationData["index"]}, data, True)
+    administrationDataCollection.replace_one(
+        {"area": administrationData["area"]}, data, True)
     if result is None:
-        collection.insert_one(data)
+        administrationDataCollection.insert_one(data)
+
+    if summaryData.get(administrationData['area']) is None:
+        summaryData[administrationData['area']] = {
+            "total_vaccinated": 0
+        }
+    summaryData[administrationData['area']
+                ]['total_vaccinated'] += data['second_dose']
+
+for area, data in summaryData.items():
+    document = latestDataCollection.find_one({"area": area})
+    if document is None:
+        data["area"] = area
+        latestDataCollection.insert_one(data)
+    else:
+        document.update(data)
+        latestDataCollection.replace_one(
+            {"area": document["area"]}, document, True)
+
 
 print("Synchronization completed!")

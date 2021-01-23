@@ -19,13 +19,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.get('/latestData', async (req, res) => {
-  const latestData = await LatestData.find()
+  var latestData = await LatestData.find()
   var summaryData = {
+    'area': 'ITA',
     'doses_administered': 0,
     'doses_delivered': 0,
     'administration_percentage': 0,
-    'last_update': ''
+    'last_update': '',
+    'total_vaccinated': 0
   }
+  for(latestDataDetails of latestData) {
+    if(latestDataDetails.area == 'ITA') {
+      Object.assign(summaryData, latestDataDetails.toJSON())
+    }
+  }
+  latestData = latestData.filter(details => details.area != 'ITA')
   var lastUpdate
   for (const regionData of latestData) {
     summaryData.doses_delivered += regionData.doses_delivered
