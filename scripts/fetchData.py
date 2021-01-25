@@ -48,7 +48,7 @@ for administrationData in result['data']:
         "second_dose": administrationData["seconda_dose"]
     }
     administrationDataCollection.replace_one(
-        {"area": administrationData["area"]}, data, True)
+        {"index": administrationData["index"]}, data, True)
     if result is None:
         administrationDataCollection.insert_one(data)
 
