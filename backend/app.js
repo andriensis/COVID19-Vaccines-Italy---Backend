@@ -49,7 +49,7 @@ app.get('/latestData', async (req, res) => {
 })
 
 app.get('/administrationData/:area', async (req, res) => {
-  const administrationData = await AdministrationData.find({area: req.params.area})
+  const administrationData = await AdministrationData.find({area: req.params.area}, null, {sort: {"administration_date": 1}})
   res.send(administrationData)
 })
 
